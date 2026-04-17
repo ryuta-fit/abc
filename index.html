@@ -3,96 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cascade Café</title>
-  <meta name="description" content="街角の小さなカフェ。香り高いコーヒーと焼きたてのペストリーを。" />
+  <title>人体解剖 3D ビューア</title>
+  <meta name="description" content="Three.js で動く、人体の構造を学ぶインタラクティブ 3D モデル。骨格・内臓・筋肉・皮膚を切り替えて学べます。" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="logo" href="#">Cascade Café</a>
-      <nav class="nav">
-        <a href="#menu">メニュー</a>
-        <a href="#about">私たちについて</a>
-        <a href="#access">アクセス</a>
-      </nav>
-    </div>
+  <header class="topbar">
+    <h1 class="title">人体解剖 <span>3D ビューア</span></h1>
+    <p class="subtitle">ドラッグで回転 / ホイールでズーム / パーツをクリックで詳細表示</p>
   </header>
 
-  <main>
-    <section class="hero" aria-label="ヒーロー">
-      <div class="hero-inner container">
-        <h1>一杯のコーヒーで、やさしい時間を。</h1>
-        <p>自家焙煎の豆と、毎朝焼き上げるペストリーをご用意しています。</p>
-        <a class="btn" href="#menu">メニューを見る</a>
-      </div>
+  <main class="layout">
+    <!-- 左: レイヤーパネル -->
+    <aside class="panel panel-left" aria-label="レイヤー切替">
+      <section class="panel-section">
+        <h2>表示レイヤー</h2>
+        <label class="toggle"><input type="checkbox" id="toggle-skin"      checked> <span class="dot skin"></span> 皮膚</label>
+        <label class="toggle"><input type="checkbox" id="toggle-muscle"    checked> <span class="dot muscle"></span> 筋肉</label>
+        <label class="toggle"><input type="checkbox" id="toggle-skeleton"  checked> <span class="dot skeleton"></span> 骨格</label>
+        <label class="toggle"><input type="checkbox" id="toggle-organ"     checked> <span class="dot organ"></span> 内臓</label>
+      </section>
+
+      <section class="panel-section">
+        <h2>皮膚の不透明度</h2>
+        <input type="range" id="skin-opacity" min="0" max="100" value="22">
+      </section>
+
+      <section class="panel-section">
+        <h2>オプション</h2>
+        <label class="toggle"><input type="checkbox" id="toggle-labels"> <span>部位ラベルを表示</span></label>
+        <button id="reset-view" class="btn-secondary">視点をリセット</button>
+      </section>
+
+      <section class="panel-section legend">
+        <h2>凡例</h2>
+        <div><span class="dot skeleton"></span> 骨格系</div>
+        <div><span class="dot organ"></span> 内臓系</div>
+        <div><span class="dot muscle"></span> 筋肉系</div>
+      </section>
+    </aside>
+
+    <!-- 中央: 3D ビューポート -->
+    <section id="viewport" class="viewport" aria-label="3D ビューポート">
+      <div id="loading" class="loading">モデルを読み込み中…</div>
     </section>
 
-    <section id="menu" class="section container">
-      <h2>メニュー</h2>
-      <div class="cards">
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=1200&auto=format&fit=crop" alt="ハンドドリップコーヒー" />
-          <div class="card-body">
-            <h3>ハンドドリップ</h3>
-            <p>豆本来の風味を丁寧に引き出した一杯。</p>
-            <p class="price">¥480</p>
-          </div>
-        </article>
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=1200&auto=format&fit=crop" alt="カフェラテ" />
-          <div class="card-body">
-            <h3>カフェラテ</h3>
-            <p>まろやかなミルクとエスプレッソの調和。</p>
-            <p class="price">¥540</p>
-          </div>
-        </article>
-        <article class="card">
-          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=1200&auto=format&fit=crop" alt="クロワッサン" />
-          <div class="card-body">
-            <h3>クロワッサン</h3>
-            <p>外はサクッと、中はバターが香るリッチな味わい。</p>
-            <p class="price">¥320</p>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="about" class="section alt">
-      <div class="container about">
-        <div class="about-text">
-          <h2>私たちについて</h2>
-          <p>Cascade Café は、毎日を少しだけ丁寧に過ごすための街角の拠点です。季節に合わせた豆を少量焙煎し、フードは可能な限り地元の素材で。</p>
-          <p>おひとりでも、仲間とでも。気軽にお立ち寄りください。</p>
+    <!-- 右: 情報パネル -->
+    <aside class="panel panel-right" aria-label="選択部位の情報">
+      <div class="info-card">
+        <h2 id="info-title">人体を探検しよう</h2>
+        <div class="info-meta">
+          <span id="info-badge" class="badge" data-system=""></span>
+          <span id="info-en" class="en"></span>
         </div>
-        <img class="about-img" src="https://images.unsplash.com/photo-1498804103079-a6351b050096?q=80&w=1200&auto=format&fit=crop" alt="店内の雰囲気" />
-      </div>
-    </section>
-
-    <section id="access" class="section container">
-      <h2>アクセス</h2>
-      <div class="access-grid">
-        <div>
-          <p>〒100-0000 東京都千代田区1-2-3</p>
-          <p>平日 8:00 - 19:00 / 土日祝 9:00 - 18:00</p>
-          <p>Tel: 03-1234-5678</p>
-          <a class="link" href="mailto:hello@cascadecafe.example">hello@cascadecafe.example</a>
+        <p id="info-desc" class="info-desc"></p>
+        <div id="info-hint" class="info-hint">
+          <p>表示レイヤーのチェックで骨格・内臓・筋肉・皮膚を切り替えられます。</p>
+          <p>モデル上のパーツをクリックすると、ここに日本語名・英語名・役割が表示されます。</p>
+          <ul>
+            <li>左ドラッグ: 回転</li>
+            <li>ホイール / ピンチ: ズーム</li>
+            <li>右ドラッグ: 視点移動 (パン)</li>
+          </ul>
         </div>
-        <iframe title="Google Map" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.954692032202!2d139.753!3d35.681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z!5e0!3m2!1sja!2sjp!4v1710000000000"></iframe>
       </div>
-    </section>
+    </aside>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; <span id="y"></span> Cascade Café</p>
-    </div>
+  <footer class="footer">
+    <p>学習用の簡易 3D モデルです。正確な医学的診断には使用しないでください。</p>
   </footer>
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
+
+  <script type="module" src="./anatomy.js"></script>
 </body>
 </html>
